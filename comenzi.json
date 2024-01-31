@@ -1,11 +1,10 @@
-[
-    {
+[{
         "description": "Lista comenzilor Consolei Mautic",
         "command": "/var/www/mautic/bin/console list"
     },
     {
         "description": "Restabileşte permisiunile dosarului Mautic",
-        "command": "/usr/local/bin/reset-permisiuni-mautic.sh"
+        "command": "bash /usr/local/bin/reset-permisiuni-mautic.sh"
     },
     {
         "description": "Şterge cache-ul",
@@ -13,7 +12,7 @@
     },
     {
         "description": "Crează acum o copie de rezervă a mautic (baza de date şi dosar Mautic)",
-        "command": "/var/mautic-crons/cron-backup.sh"
+        "command": "bash /var/mautic-crons/cron-backup.sh"
     },
     {
         "description": "Actualizează toate segmentele",
@@ -89,10 +88,14 @@
     },
     {
         "description": "Resetează statistica emailurilor de la Webinarii",
-        "command": "/var/www/mautic/bin/console doctrine:query:sql \"UPDATE emails SET read_count = 0, sent_count = 0, variant_sent_count = 0, variant_read_count = 0 WHERE id IN (SELECT e.id FROM emails e JOIN categories c ON e.category_id = c.id WHERE c.title = 'Webinar');\""
+        "command": "/var/www/mautic/bin/console doctrine:query:sql \"UPDATE emails SET read_count = 0, sent_count = 0, variant_sent_count = 0, variant_read_count = 0 WHERE id IN (SELECT e.id FROM emails e JOIN categories c ON e.category_id = c.id WHERE LOWER(c.title) LIKE '%webinar%');\""
     },
     {
-        "description": "Afişează comenzile SQL pentru a actualiza baza de date",
-        "command": "/var/www/mautic/bin/console doctrine:schema:update --dump-sql"
+        "description": "Şterg email_stats pentru emailurile de Webinarii",
+        "command": "/var/www/mautic/bin/console doctrine:query:sql \"DELETE FROM email_stats WHERE email_id IN (SELECT e.id FROM emails e JOIN categories c ON e.category_id = c.id WHERE LOWER(c.title) LIKE '%webinar%');\""
+    },
+    {
+        "description": "Actualizează acest utilitar",
+        "command": "bash /var/www/mautic/comenzi.sh"
     }
 ]

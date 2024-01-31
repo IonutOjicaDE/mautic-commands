@@ -33,50 +33,13 @@
 <body>
 
 <?php
-// Începeți sesiunea
 session_start();
-$comenziVersiune = 1.0;
-$comenziData = DateTime::createFromFormat('d.m.Y', '31.01.2024');
 
 // Generarea token-ului CSRF (Cross-Site Request Forgery token)
 if (empty($_SESSION['csrf_token'])) { $_SESSION['csrf_token'] = bin2hex(random_bytes(32)); }
 
 require '/var/mautic-crons/mautic.php';
 
-function debugVar($var, $varName){echo $varName . ' = ';var_dump($var);echo ";<br>";}
-
-define('MAUTIC_ROOT_DIR', __DIR__);
-$server_name = filter_input(INPUT_SERVER, 'SERVER_NAME');// "test.ionutojica.com"
-if (isset($_SERVER['MAUTIC_ROOT'])) {
-  // The path to Mautic root.
-  // Please note: %kernel.root_dir% = $docroot/app
-
-  // $docroot = filter_input(INPUT_SERVER, 'MAUTIC_ROOT').'/mautic';
-  $docroot = filter_input(INPUT_SERVER, 'MAUTIC_ROOT'); // "/var/www/mautic"
-} else {
-  $docroot = __DIR__; // "/var/www/mautic"
-}
-$phpConsolePath = 'php '.$docroot.'/bin/console ';
-
-require_once $docroot.'/autoload.php';
-require_once $docroot.'/app/AppKernel.php';
-require $docroot.'/vendor/autoload.php';
-
-use Symfony\Bundle\FrameworkBundle\Console\Application;
-use Symfony\Component\Console\Input\ArgvInput;
-use Symfony\Component\Console\Output\BufferedOutput;
-
-use Mautic\CoreBundle\Loader\ParameterLoader;
-use Mautic\CoreBundle\Release\ThisRelease;
-
-defined('IN_MAUTIC_CONSOLE') or define('IN_MAUTIC_CONSOLE', 1);
-
-$metadata = ThisRelease::getMetadata();
-defined('MAUTIC_VERSION') or define('MAUTIC_VERSION', $metadata->getVersion());
-
-$version = MAUTIC_VERSION;
-
-$request_uri = "//{$server_name}{$_SERVER['REQUEST_URI']}"; // "//test.ionutojica.com/comenzi.php"
 $shouldReload = false;
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -86,19 +49,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     die('Token-ul CSRF este invalid. Reimprospateaza pagina (Reload / Refresh / F5)');
   } else {
     // Procesarea formularului
-
     $parola = $_POST['parola'];
     
     // Verificați dacă parola introdusă corespunde cu cea salvată
     if ($parola == $mautic_comenzi_secret_key) {
       $parolaCorecta = true;
-      $comenzi = json_decode(file_get_contents('comenzi.json'), true);
-      
-      $element = [
-        'description' => file_exists("/var/mautic-crons/DO-NOT-RUN") ? 'Activeaza CronJob-urile' : 'Dezactiveaza CronJob-urile',
-        'command' => $dosar_instalare_cron.'schimbaCronJobs.sh'
-      ];
-      array_unshift($comenzi, $element);
       $durataMaxima = 60;
         
       if (isset($_POST['commandaleasa'])) {
@@ -106,16 +61,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $commandAleasa = $_POST['commandaleasa'];
         $durataMaxima = (int)$_POST['durataslider']; // este "60"
         set_time_limit($durataMaxima + 20);
-        
-        $commandGasita = null;
-        foreach ($comenzi as $index => $command) {
-          if ($command['command'] === $commandAleasa) {
-            $descriptionGasita = $command['description'];
-            $commandGasita = $command['command'];
-            break;
-          }
-        }
-        if ($commandGasita !== null) { $commandAleasa = $commandGasita; }
 
         // Deschideți procesul
         $descriptorspec = array(
@@ -147,15 +92,31 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
               $codRezultat = -2; // Setează un cod de eroare personalizat pentru timeout
               break;
             }
-
             // Așteptați 0.5s înainte de a verifica din nou
             usleep(500000);
           }
-        } else {
-          // doar parola a fost introdusa corect, restul formularului nu a fost afisat
-          
         }
-      }        // Resetați numărul de încercări eșuate
+        
+      }
+      
+      $comenzi = json_decode(file_get_contents('comenzi.json'), true);
+      
+      $element = [
+        'description' => file_exists("/var/mautic-crons/DO-NOT-RUN") ? 'Activeaza CronJob-urile' : 'Dezactiveaza CronJob-urile',
+        'command' => 'bash '.$dosar_instalare_cron.'schimbaCronJobs.sh'
+      ];
+      array_unshift($comenzi, $element);
+
+      if (isset($commandAleasa)) {
+        foreach ($comenzi as $index => $command) {
+          if ($command['command'] === $commandAleasa) {
+            $descriptionGasita = $command['description'];
+            break;
+          }
+        }
+      }
+
+      // Resetați numărul de încercări eșuate
       $_SESSION['incercari_esuate'] = 0;
     } else {
       $parolaCorecta = false;
@@ -184,7 +145,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 ?>
 
 <h1>Execută comenzi Mautic</h1>
-<p>Server: <strong style="color:blue"><?php echo $server_name ?></strong> , Versiunea Mautic: <strong style="color:blue"><?php echo $version ?></strong></p>
 
 <form method="post">
   <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
@@ -204,7 +164,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   <?php endforeach; ?>
   <br><br>
   <label>3. Comanda aleasă: <span id="commanddescription"><?php echo $descriptionGasita; ?></span><br>
-    <textarea rows="4" cols="60" name="commandaleasa" placeholder="alege o comandă"><?php echo $commandGasita; ?></textarea>
+    <textarea rows="4" cols="60" name="commandaleasa" placeholder="alege o comandă"><?php echo $commandAleasa; ?></textarea>
   </label><br><br><br>
   <label>4. Durata maximă de execuție: <span id="duratavaloare"><?php echo $durataMaxima; ?></span>s<br>
     10s <input type="range" min="10" max="120" value="<?php echo $durataMaxima; ?>" step="10" name="durataslider"> 120s
@@ -222,8 +182,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <pre id="output"><?php echo htmlspecialchars($output); ?></pre>
   </div>
 </div>
-
-<p>comenzi.php , Versiunea: <?php echo $comenziVersiune ?> , Data ultimei modificari: <?php echo $comenziData->format('d.m.Y') ?> .</p>
 <?php endif; ?>
 
 <script>
@@ -291,11 +249,7 @@ window.onload = function() {
 <?php endif; ?>
 
   function checkInput() {
-    if (parola.value === ''<?php if ($parolaCorecta): ?> || commandaleasa.value === ''<?php endif; ?>) {
-      submit.disabled = true;
-    } else {
-      submit.disabled = false;
-    }
+    submit.disabled = (parola.value === '' <?php if ($parolaCorecta) echo " || commandaleasa.value === ''"; ?>);
   }
 
   parola.addEventListener('input', checkInput);
