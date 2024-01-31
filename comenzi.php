@@ -98,14 +98,113 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
         
       }
-      
-      $comenzi = json_decode(file_get_contents('comenzi.json'), true);
-      
-      $element = [
-        'description' => file_exists("/var/mautic-crons/DO-NOT-RUN") ? 'Activeaza CronJob-urile' : 'Dezactiveaza CronJob-urile',
-        'command' => 'bash '.$dosar_instalare_cron.'schimbaCronJobs.sh'
-      ];
-      array_unshift($comenzi, $element);
+      $phpConsolePath = 'php '.$dosar_instalare_mautic.'bin/console ';
+      $comenzi = [
+        [
+          'description' => file_exists($dosar_instalare_cron.'DO-NOT-RUN') ? 'Activeaza CronJob-urile' : 'Dezactiveaza CronJob-urile',
+          'command' => 'bash '.$dosar_instalare_cron.'schimbaCronJobs.sh'
+        ],
+        [
+          "description" => "Lista comenzilor Consolei Mautic",
+          "command" => $phpConsolePath.'list'
+        ],
+        [
+          "description" => 'Restabileşte permisiunile dosarului Mautic',
+          "command" => 'bash /usr/local/bin/reset-permisiuni-mautic.sh'
+        ],
+        [
+          "description" => "Şterge cache-ul",
+          "command" => $phpConsolePath.'cache:clear'
+        ],
+        [
+          "description" => "Crează acum o copie de rezervă a mautic (baza de date şi dosar Mautic)",
+          "command" => 'bash '.$dosar_instalare_cron.'cron-backup.sh'
+        ],
+        [
+          "description" => "Actualizează toate segmentele",
+          "command" => $phpConsolePath.'mautic:segments:update'
+        ],
+        [
+          "description" => "Actualizează toate campaniile",
+          "command" => $phpConsolePath.'mautic:campaigns:update'
+        ],
+        [
+          "description" => "Proceseaza toate campaniile",
+          "command" => $phpConsolePath.'mautic:campaigns:trigger'
+        ],
+        [
+          "description" => "Trimite emailurile",
+          "command" => $phpConsolePath.'mautic:emails:send'
+        ],
+        [
+          "description" => "Trimite newsletterele",
+          "command" => $phpConsolePath.'mautic:broadcasts:send'
+        ],
+        [
+          "description" => "Trimite SMS-urile",
+          "command" => $phpConsolePath.'mautic:messages:send'
+        ],
+        [
+          "description" => "Proceseaza webhook-urile",
+          "command" => $phpConsolePath.'mautic:webhooks:process'
+        ],
+        [
+          "description" => "Proceseaza rapoartele programate",
+          "command" => $phpConsolePath.'mautic:reports:scheduler'
+        ],
+        [
+          "description" => "Actualizeaza plugin-urile",
+          "command" => $phpConsolePath.'mautic:plugins:update'
+        ],
+        [
+          "description" => "Importa 600 contacte",
+          "command" => $phpConsolePath.'mautic:import --limit=600'
+        ],
+        [
+          "description" => "Arata info mai vechi de 90 de zile ce pot fi sterse",
+          "command" => $phpConsolePath.'mautic:maintenance:cleanup --no-interaction --days-old=90 --dry-run'
+        ],
+        [
+          "description" => "Sterge info mai vechi de 90 de zile",
+          "command" => $phpConsolePath.'mautic:maintenance:cleanup --no-interaction --days-old=90'
+        ],
+        [
+          "description" => "Deduplicarea contactelor",
+          "command" => $phpConsolePath.'mautic:contacts:deduplicate'
+        ],
+        [
+          "description" => "Şterge IP-urile nefolosite",
+          "command" => $phpConsolePath.'mautic:unusedip:delete'
+        ],
+        [
+          "description" => "Actualizează baza de date MaxMind",
+          "command" => $phpConsolePath.'mautic:iplookup:download'
+        ],
+        [
+          "description" => "Vezi starea migrărilor",
+          "command" => $phpConsolePath.'doctrine:migrations:status'
+        ],
+        [
+          "description" => "Validează starea migrărilor",
+          "command" => $phpConsolePath.'doctrine:schema:validate'
+        ],
+        [
+          "description" => "Afişează comenzile SQL pentru a actualiza baza de date",
+          "command" => $phpConsolePath.'doctrine:schema:update --dump-sql'
+        ],
+        [
+          "description" => "Resetează statistica emailurilor de la Webinarii",
+          "command" => $phpConsolePath."doctrine:query:sql \"UPDATE emails SET read_count = 0, sent_count = 0, variant_sent_count = 0, variant_read_count = 0 WHERE id IN (SELECT e.id FROM emails e JOIN categories c ON e.category_id = c.id WHERE LOWER(c.title) LIKE '%webinar%');\""
+        ],
+        [
+          "description" => "Şterg email_stats pentru emailurile de Webinarii",
+          "command" => $phpConsolePath."doctrine:query:sql \"DELETE FROM email_stats WHERE email_id IN (SELECT e.id FROM emails e JOIN categories c ON e.category_id = c.id WHERE LOWER(c.title) LIKE '%webinar%');\""
+        ],
+        [
+          "description" => "Actualizează acest utilitar",
+          "command" => 'bash '.$dosar_instalare_mautic.'comenzi.sh'
+        ]
+    ];
 
       if (isset($commandAleasa)) {
         foreach ($comenzi as $index => $command) {
