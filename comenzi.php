@@ -15,8 +15,25 @@
   input[type="submit"]:hover {opacity:1;}
   input[type="submit"]:disabled {background-color:#f0f0f0;cursor:not-allowed;}
   
+  .container {display:flex; flex-wrap:wrap; gap:0px;}
   input[type="radio"] {display:none;}
-  div.command-container {display:inline-block; padding:10px; background-color:#f0f0f0; margin:5px; border-radius:10px; cursor:pointer; text-align:center}
+  div.command-container {
+    display: flex;
+    flex: 0 0 auto;
+    margin: 0px;
+    padding: 10px;
+    cursor: pointer;
+    max-width: 230px;
+    min-width: 150px;
+    box-sizing: content-box;
+    white-space: normal; /* permite întreruperea liniei */
+    border-radius: 10px;
+    border: 5px solid white;
+    justify-content: center; /* aliniază conținutul pe orizontală */
+    align-items: center; /* aliniază conținutul pe verticală */
+    transition: border 1s ease-in, border-radius 1s ease-in, background-color 0.2s ease-out, color 0.2s ease-out ;
+  }
+  div.command-container:hover { background-color: white; color: black; }
   div.command-container label[name="description"], #commanddescription {font-weight:bold; cursor:pointer;}
   div.command-container label[name="command"] {font-size:0.9em;cursor:pointer; display:none;}
   .div-selectat {background-color:#d0d0d0 !important; box-shadow:0 0 10px rgba(0,0,0,0.1);}
@@ -27,6 +44,55 @@
   input[type="range"]::-webkit-slider-thumb {-webkit-appearance:none; appearance:none;
     width:25px;height:25px;border-radius:50%; background:#4CAF50; cursor:pointer;}
   input[type="range"]::-moz-range-thumb {width:25px; height:25px; border-radius:50%; background:#4CAF50; cursor:pointer;}
+
+  /* Definirea culorilor pentru butoane */
+  .gri.hover { margin:0px; border: 5px solid #888888; border-radius: 0px; } /* Gri inchis */
+  .gri1 { background-color: #555555; color: white; } /* Gri inchis */
+  .gri2 { background-color: #888888; color: white; } /* Gri */
+  .gri3 { background-color: #e7e7e7; color: black; } /* Gri deschis */
+
+  /* Setul 1: Nuanțe de albastru */
+  .albastru.hover { margin:0px; border: 5px solid #0000FF; border-radius: 0px;} /* Albastru */
+  .albastru1 { background-color: #00008B; color: white; } /* Albastru închis */
+  .albastru2 { background-color: #0000FF; color: white; } /* Albastru */
+  .albastru3 { background-color: #008CBA; color: white; } /* Albastru pal */
+  .albastru4 { background-color: #00BFFF; color: black; } /* Albastru deschis */
+  .albastru5 { background-color: #00FFFF; color: black; } /* Cyan */
+
+  /* Setul 2: Nuanțe de verde */
+  .verde.hover { margin:0px; border: 5px solid #008000; border-radius: 0px;} /* Verde */
+  .verde1 { background-color: #006400; color: white; } /* Verde închis */
+  .verde2 { background-color: #008000; color: white; } /* Verde */
+  .verde3 { background-color: #04AA6D; color: white; } /* Verde deschis */
+  .verde4 { background-color: #20B2AA; color: white; } /* Verde marin deschis */
+  .verde5 { background-color: #ADFF2F; color: black; } /* Verde aprins */
+  .verde6 { background-color: #98FB98; color: black; } /* Verde mentă deschis */
+
+  /* Setul 3: Nuanțe de roșu */
+  .rosu.hover { margin:0px; border: 5px solid #f44336; border-radius: 0px;} /* Roșu */
+  .rosu1 { background-color: #8B0000; color: white; } /* Maro intens */
+  .rosu2 { background-color: #FF0000; color: white; } /* Roșu intens */
+  .rosu3 { background-color: #f44336; color: white; } /* Roșu */
+  .rosu4 { background-color: #FFA07A; color: black; } /* Roșu pal */
+  .rosu5 { background-color: #FF69B4; color: white; } /* Roz intens */
+  .rosu6 { background-color: #FFC0CB; color: black; } /* Roz */
+
+  /* Setul 4: Nuanțe de portocaliu */
+  .portocaliu.hover { margin:0px; border: 5px solid #FFA500; border-radius: 0px;} /* Portocaliu */
+  .portocaliu1 { background-color: #8B4513; color: white; } /* Maro pal */
+  .portocaliu2 { background-color: #FF8C00; color: white; } /* Portocaliu intens */
+  .portocaliu3 { background-color: #FFA500; color: black; } /* Portocaliu */
+  .portocaliu4 { background-color: #FFD700; color: black; } /* Auriu */
+  .portocaliu5 { background-color: #FFDAB9; color: black; } /* Portocaliu pal */
+
+  /* Setul 5: Nuanțe de mov */
+  .mov.hover { margin:0px; border: 5px solid #A020F0; border-radius: 0px;} /* Veronica */
+  .mov1 { background-color: #8B008B; color: white; } /* Dark Magenta */
+  .mov2 { background-color: #6F3096; color: white; } /* Tacao */
+  .mov3 { background-color: #A020F0; color: white; } /* Veronica */
+  .mov4 { background-color: #D05FAD; color: white; } /* Hopbush */
+  .mov5 { background-color: #E39FF6; color: black; } /* Lavender */
+
 </style>
 
 </head>
@@ -102,109 +168,135 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       $comenzi = [
         [
           'description' => file_exists($dosar_instalare_cron.'DO-NOT-RUN') ? 'Activeaza CronJob-urile' : 'Dezactiveaza CronJob-urile',
-          'command' => 'bash '.$dosar_instalare_cron.'schimbaCronJobs.sh'
+          'command' => 'bash '.$dosar_instalare_cron.'schimbaCronJobs.sh',
+          'color' => 'portocaliu portocaliu2'
         ],
         [
           "description" => "Lista comenzilor Consolei Mautic",
-          "command" => $phpConsolePath.'list'
+          "command" => $phpConsolePath.'list',
+          'color' => 'gri gri1'
         ],
         [
           "description" => 'Restabileşte permisiunile dosarului Mautic',
-          "command" => 'bash /usr/local/bin/reset-permisiuni-mautic.sh'
+          "command" => 'bash /usr/local/bin/reset-permisiuni-mautic.sh',
+          'color' => 'verde verde1'
         ],
         [
           "description" => "Şterge cache-ul",
-          "command" => $phpConsolePath.'cache:clear'
+          "command" => $phpConsolePath.'cache:clear',
+          'color' => 'verde verde2'
         ],
         [
           "description" => "Crează acum o copie de rezervă a mautic (baza de date şi dosar Mautic)",
-          "command" => 'bash '.$dosar_instalare_cron.'cron-backup.sh'
+          "command" => 'bash '.$dosar_instalare_cron.'cron-backup.sh',
+          'color' => 'verde verde3'
         ],
         [
           "description" => "Actualizează toate segmentele",
-          "command" => $phpConsolePath.'mautic:segments:update'
+          "command" => $phpConsolePath.'mautic:segments:update',
+          'color' => 'albastru albastru1'
         ],
         [
           "description" => "Actualizează toate campaniile",
-          "command" => $phpConsolePath.'mautic:campaigns:update'
+          "command" => $phpConsolePath.'mautic:campaigns:update',
+          'color' => 'albastru albastru2'
         ],
         [
           "description" => "Proceseaza toate campaniile",
-          "command" => $phpConsolePath.'mautic:campaigns:trigger'
+          "command" => $phpConsolePath.'mautic:campaigns:trigger',
+          'color' => 'albastru albastru2'
         ],
         [
           "description" => "Trimite emailurile",
-          "command" => $phpConsolePath.'mautic:emails:send'
+          "command" => $phpConsolePath.'mautic:emails:send',
+          'color' => 'albastru albastru3'
         ],
         [
           "description" => "Trimite newsletterele",
-          "command" => $phpConsolePath.'mautic:broadcasts:send'
+          "command" => $phpConsolePath.'mautic:broadcasts:send',
+          'color' => 'albastru albastru3'
         ],
         [
           "description" => "Trimite SMS-urile",
-          "command" => $phpConsolePath.'mautic:messages:send'
-        ],
-        [
-          "description" => "Proceseaza webhook-urile",
-          "command" => $phpConsolePath.'mautic:webhooks:process'
+          "command" => $phpConsolePath.'mautic:messages:send',
+          'color' => 'albastru albastru3'
         ],
         [
           "description" => "Proceseaza rapoartele programate",
-          "command" => $phpConsolePath.'mautic:reports:scheduler'
+          "command" => $phpConsolePath.'mautic:reports:scheduler',
+          'color' => 'albastru albastru4'
+        ],
+        [
+          "description" => "Proceseaza webhook-urile",
+          "command" => $phpConsolePath.'mautic:webhooks:process',
+          'color' => 'albastru albastru5'
         ],
         [
           "description" => "Actualizeaza plugin-urile",
-          "command" => $phpConsolePath.'mautic:plugins:update'
+          "command" => $phpConsolePath.'mautic:plugins:update',
+          'color' => 'verde verde4'
         ],
         [
           "description" => "Importa 600 contacte",
-          "command" => $phpConsolePath.'mautic:import --limit=600'
+          "command" => $phpConsolePath.'mautic:import --limit=600',
+          'color' => 'albastru albastru5'
         ],
         [
           "description" => "Arata info mai vechi de 90 de zile ce pot fi sterse",
-          "command" => $phpConsolePath.'mautic:maintenance:cleanup --no-interaction --days-old=90 --dry-run'
+          "command" => $phpConsolePath.'mautic:maintenance:cleanup --no-interaction --days-old=90 --dry-run',
+          'color' => 'portocaliu portocaliu2'
         ],
         [
           "description" => "Sterge info mai vechi de 90 de zile",
-          "command" => $phpConsolePath.'mautic:maintenance:cleanup --no-interaction --days-old=90'
+          "command" => $phpConsolePath.'mautic:maintenance:cleanup --no-interaction --days-old=90',
+          'color' => 'rosu rosu1'
         ],
         [
           "description" => "Deduplicarea contactelor",
-          "command" => $phpConsolePath.'mautic:contacts:deduplicate'
+          "command" => $phpConsolePath.'mautic:contacts:deduplicate',
+          'color' => 'rosu rosu2'
         ],
         [
           "description" => "Şterge IP-urile nefolosite",
-          "command" => $phpConsolePath.'mautic:unusedip:delete'
+          "command" => $phpConsolePath.'mautic:unusedip:delete',
+          'color' => 'rosu rosu3'
         ],
         [
           "description" => "Actualizează baza de date MaxMind",
-          "command" => $phpConsolePath.'mautic:iplookup:download'
+          "command" => $phpConsolePath.'mautic:iplookup:download',
+          'color' => 'verde verde5'
         ],
         [
           "description" => "Vezi starea migrărilor",
-          "command" => $phpConsolePath.'doctrine:migrations:status'
+          "command" => $phpConsolePath.'doctrine:migrations:status',
+          'color' => 'portocaliu portocaliu3'
         ],
         [
           "description" => "Validează starea migrărilor",
-          "command" => $phpConsolePath.'doctrine:schema:validate'
+          "command" => $phpConsolePath.'doctrine:schema:validate',
+          'color' => 'portocaliu portocaliu4'
         ],
         [
           "description" => "Afişează comenzile SQL pentru a actualiza baza de date",
-          "command" => $phpConsolePath.'doctrine:schema:update --dump-sql'
+          "command" => $phpConsolePath.'doctrine:schema:update --dump-sql',
+          'color' => 'portocaliu portocaliu5'
         ],
         [
           "description" => "Resetează statistica emailurilor de la Webinarii",
-          "command" => $phpConsolePath."doctrine:query:sql \"UPDATE emails SET read_count = 0, sent_count = 0, variant_sent_count = 0, variant_read_count = 0 WHERE id IN (SELECT e.id FROM emails e JOIN categories c ON e.category_id = c.id WHERE LOWER(c.title) LIKE '%webinar%');\""
+          "command" => $phpConsolePath."doctrine:query:sql \"UPDATE emails SET read_count = 0, sent_count = 0, variant_sent_count = 0, variant_read_count = 0 WHERE id IN (SELECT e.id FROM emails e JOIN categories c ON e.category_id = c.id WHERE LOWER(c.title) LIKE '%webinar%');\"",
+          'color' => 'rosu rosu4'
         ],
         [
           "description" => "Şterg email_stats pentru emailurile de Webinarii",
-          "command" => $phpConsolePath."doctrine:query:sql \"DELETE FROM email_stats WHERE email_id IN (SELECT e.id FROM emails e JOIN categories c ON e.category_id = c.id WHERE LOWER(c.title) LIKE '%webinar%');\""
+          "command" => $phpConsolePath."doctrine:query:sql \"DELETE FROM email_stats WHERE email_id IN (SELECT e.id FROM emails e JOIN categories c ON e.category_id = c.id WHERE LOWER(c.title) LIKE '%webinar%');\"",
+          'color' => 'rosu rosu5'
         ],
         [
           "description" => "Actualizează acest utilitar",
-          "command" => 'bash '.$dosar_instalare_mautic.'comenzi.sh'
+          "command" => 'bash '.$dosar_instalare_mautic.'comenzi.sh',
+          'color' => 'mov mov1'
         ]
-    ];
+      ];
 
       if (isset($commandAleasa)) {
         foreach ($comenzi as $index => $command) {
@@ -254,13 +346,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <?php if ($parolaCorecta): ?>
   2. Alege o comandă pentru a fi executată:
   <br>
-  <?php foreach ($comenzi as $index => $command) : ?>
-  <div class="command-container">
-    <input type="radio" class="radio-command" id="command<?php echo $index; ?>" name="command" value="<?php echo $index; ?>">
-    <label for="command<?php echo $index; ?>" name="description"><?php echo $command['description']; ?></label><br>
-    <label for="command<?php echo $index; ?>" name="command"><?php echo $command['command']; ?></label>
+  <div class="comenzi-container">
+    <?php foreach ($comenzi as $index => $command) : ?>
+    <div class="command-container <?php echo htmlspecialchars($command['color']); ?>">
+      <input type="radio" class="radio-command" id="command<?php echo $index; ?>" name="command" value="<?php echo $index; ?>">
+      <label for="command<?php echo $index; ?>" name="description"><?php echo $command['description']; ?></label><br>
+      <label for="command<?php echo $index; ?>" name="command"><?php echo $command['command']; ?></label>
+    </div>
+    <?php endforeach; ?>
   </div>
-  <?php endforeach; ?>
   <br><br>
   <label>3. Comanda aleasă: <span id="commanddescription"><?php echo $descriptionGasita; ?></span><br>
     <textarea rows="4" cols="60" name="commandaleasa" placeholder="alege o comandă"><?php echo $commandAleasa; ?></textarea>
@@ -367,6 +461,33 @@ window.onload = function() {
 
   // Verifică imediat la încărcarea paginii
   checkInput();
+
+<?php if ($parolaCorecta): ?>
+  // Selectează toate seturile de butoane
+  var sets = ['gri', 'albastru', 'verde', 'rosu', 'portocaliu', 'mov'];
+
+  sets.forEach(function(set) {
+    // Selectează toate butoanele din setul curent
+    var buttons = document.getElementsByClassName(set);
+
+    // Adaugă evenimente de 'mouseover' și 'mouseout' fiecărui buton
+    for (var i = 0; i < buttons.length; i++) {
+      buttons[i].addEventListener('mouseover', function() {
+        // Adaugă clasa 'hover' la toate butoanele din setul curent când unul este hover
+        for (var j = 0; j < buttons.length; j++) {
+          buttons[j].classList.add('hover');
+        }
+      });
+
+      buttons[i].addEventListener('mouseout', function() {
+        // Elimină clasa 'hover' de la toate butoanele din setul curent când hover-ul se termină
+        for (var j = 0; j < buttons.length; j++) {
+          buttons[j].classList.remove('hover');
+        }
+      });
+    }
+  });
+<?php endif; ?>
 };
 
 <?php if ($shouldReload) echo 'location.reload();'; ?>
@@ -375,4 +496,3 @@ window.onload = function() {
 
 </body>
 </html>
-
