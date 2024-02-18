@@ -1,103 +1,3 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Comenzi utile pentru Mautic</title>
-
-<style>
-  input::placeholder, textarea::placeholder {text-align:center;}
-  input[type="password"], textarea {width:80%; padding:10px; border:1px solid gray; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.1);}
-
-  div#outputdiv {width:80%; border:1px solid blue; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.1);}
-  pre#output {display:block; margin:10px;}
-  #cod-rezultat {font-size:12px; font-weight:bold;}
-
-  input[type="submit"] {background-color:#4CAF50; color:white; padding:14px 20px; margin:8px 0; border:none; cursor:pointer; width:100%; opacity:0.9; border-radius:10px;}
-  input[type="submit"]:hover {opacity:1;}
-  input[type="submit"]:disabled {background-color:#f0f0f0;cursor:not-allowed;}
-  
-  .container {display:flex; flex-wrap:wrap; gap:0px;}
-  input[type="radio"] {display:none;}
-  div.command-container {
-    display: flex;
-    flex: 0 0 auto;
-    margin: 0px;
-    padding: 10px;
-    cursor: pointer;
-    max-width: 230px;
-    min-width: 150px;
-    box-sizing: content-box;
-    white-space: normal; /* permite întreruperea liniei */
-    border-radius: 10px;
-    border: 5px solid white;
-    justify-content: center; /* aliniază conținutul pe orizontală */
-    align-items: center; /* aliniază conținutul pe verticală */
-    transition: border 1s ease-in, border-radius 1s ease-in, background-color 0.2s ease-out, color 0.2s ease-out ;
-  }
-  div.command-container:hover { background-color: white; color: black; }
-  div.command-container label[name="description"], #commanddescription {font-weight:bold; cursor:pointer;}
-  div.command-container label[name="command"] {font-size:0.9em;cursor:pointer; display:none;}
-  .div-selectat {background-color:#d0d0d0 !important; box-shadow:0 0 10px rgba(0,0,0,0.1);}
-
-  input[type="range"] {appearance:none;-webkit-appearance:none;
-    width:80%; max-width:200px; height:15px; border-radius:5px; background:#d3d3d3; outline:none; opacity:0.7;
-    -webkit-transition:1.5s; transition:opacity 1.5s;}
-  input[type="range"]::-webkit-slider-thumb {-webkit-appearance:none; appearance:none;
-    width:25px;height:25px;border-radius:50%; background:#4CAF50; cursor:pointer;}
-  input[type="range"]::-moz-range-thumb {width:25px; height:25px; border-radius:50%; background:#4CAF50; cursor:pointer;}
-
-  /* Definirea culorilor pentru butoane */
-  .gri.hover { margin:0px; border: 5px solid #888888; border-radius: 0px; } /* Gri inchis */
-  .gri1 { background-color: #555555; color: white; } /* Gri inchis */
-  .gri2 { background-color: #888888; color: white; } /* Gri */
-  .gri3 { background-color: #e7e7e7; color: black; } /* Gri deschis */
-
-  /* Setul 1: Nuanțe de albastru */
-  .albastru.hover { margin:0px; border: 5px solid #0000FF; border-radius: 0px;} /* Albastru */
-  .albastru1 { background-color: #00008B; color: white; } /* Albastru închis */
-  .albastru2 { background-color: #0000FF; color: white; } /* Albastru */
-  .albastru3 { background-color: #008CBA; color: white; } /* Albastru pal */
-  .albastru4 { background-color: #00BFFF; color: black; } /* Albastru deschis */
-  .albastru5 { background-color: #00FFFF; color: black; } /* Cyan */
-
-  /* Setul 2: Nuanțe de verde */
-  .verde.hover { margin:0px; border: 5px solid #008000; border-radius: 0px;} /* Verde */
-  .verde1 { background-color: #006400; color: white; } /* Verde închis */
-  .verde2 { background-color: #008000; color: white; } /* Verde */
-  .verde3 { background-color: #04AA6D; color: white; } /* Verde deschis */
-  .verde4 { background-color: #20B2AA; color: white; } /* Verde marin deschis */
-  .verde5 { background-color: #ADFF2F; color: black; } /* Verde aprins */
-  .verde6 { background-color: #98FB98; color: black; } /* Verde mentă deschis */
-
-  /* Setul 3: Nuanțe de roșu */
-  .rosu.hover { margin:0px; border: 5px solid #f44336; border-radius: 0px;} /* Roșu */
-  .rosu1 { background-color: #8B0000; color: white; } /* Maro intens */
-  .rosu2 { background-color: #FF0000; color: white; } /* Roșu intens */
-  .rosu3 { background-color: #f44336; color: white; } /* Roșu */
-  .rosu4 { background-color: #FFA07A; color: black; } /* Roșu pal */
-  .rosu5 { background-color: #FF69B4; color: white; } /* Roz intens */
-  .rosu6 { background-color: #FFC0CB; color: black; } /* Roz */
-
-  /* Setul 4: Nuanțe de portocaliu */
-  .portocaliu.hover { margin:0px; border: 5px solid #FFA500; border-radius: 0px;} /* Portocaliu */
-  .portocaliu1 { background-color: #8B4513; color: white; } /* Maro pal */
-  .portocaliu2 { background-color: #FF8C00; color: white; } /* Portocaliu intens */
-  .portocaliu3 { background-color: #FFA500; color: black; } /* Portocaliu */
-  .portocaliu4 { background-color: #FFD700; color: black; } /* Auriu */
-  .portocaliu5 { background-color: #FFDAB9; color: black; } /* Portocaliu pal */
-
-  /* Setul 5: Nuanțe de mov */
-  .mov.hover { margin:0px; border: 5px solid #A020F0; border-radius: 0px;} /* Veronica */
-  .mov1 { background-color: #8B008B; color: white; } /* Dark Magenta */
-  .mov2 { background-color: #6F3096; color: white; } /* Tacao */
-  .mov3 { background-color: #A020F0; color: white; } /* Veronica */
-  .mov4 { background-color: #D05FAD; color: white; } /* Hopbush */
-  .mov5 { background-color: #E39FF6; color: black; } /* Lavender */
-
-</style>
-
-</head>
-<body>
-
 <?php
 session_start();
 
@@ -334,6 +234,108 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   }
 }
 ?>
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Comenzi utile pentru Mautic</title>
+
+<style>
+  input::placeholder, textarea::placeholder {text-align:center;}
+  input[type="password"], textarea {width:80%; padding:10px; border:1px solid gray; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.1);}
+
+  div#outputdiv {width:80%; border:1px solid blue; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.1);}
+  pre#output {display:block; margin:10px;}
+  #cod-rezultat {font-size:12px; font-weight:bold;}
+
+  input[type="submit"] {background-color:#4CAF50; color:white; padding:14px 20px; margin:8px 0; border:none; cursor:pointer; width:100%; opacity:0.9; border-radius:10px;}
+  input[type="submit"]:hover {opacity:1;}
+  input[type="submit"]:disabled {background-color:#f0f0f0;cursor:not-allowed;}
+  
+  .comenzi-container {display:flex; flex-wrap:wrap; gap:0px;}
+  input[type="radio"] {display:none;}
+  div.command-container {
+    display: flex;
+    flex: 0 0 auto;
+    margin: 0px;
+    padding: 10px;
+    cursor: pointer;
+    max-width: 230px;
+    min-width: 150px;
+    box-sizing: content-box;
+    white-space: normal; /* permite întreruperea liniei */
+    border-radius: 10px;
+    border: 5px solid white;
+    justify-content: center; /* aliniază conținutul pe orizontală */
+    align-items: center; /* aliniază conținutul pe verticală */
+    transition: border 1s ease-in, border-radius 1s ease-in, background-color 0.2s ease-out, color 0.2s ease-out ;
+  }
+  div.command-container:hover { background-color:white; color:black; }
+  div.command-container label[name="description"], #commanddescription {font-weight:bold; cursor:pointer;}
+  div.command-container label[name="command"] {font-size:0.9em;cursor:pointer; display:none;}
+  .div-selectat {color:black !important; background-color:#d0d0d0 !important; border: 5px solid yellow !important;}
+
+  input[type="range"] {appearance:none;-webkit-appearance:none;
+    width:80%; max-width:200px; height:15px; border-radius:5px; background:#d3d3d3; outline:none; opacity:0.7;
+    -webkit-transition:1.5s; transition:opacity 1.5s;}
+  input[type="range"]::-webkit-slider-thumb {-webkit-appearance:none; appearance:none;
+    width:25px;height:25px;border-radius:50%; background:#4CAF50; cursor:pointer;}
+  input[type="range"]::-moz-range-thumb {width:25px; height:25px; border-radius:50%; background:#4CAF50; cursor:pointer;}
+
+  /* Definirea culorilor pentru butoane */
+  .gri.hover { margin:0px; border: 5px solid #888888; border-radius: 0px; } /* Gri inchis */
+  .gri1 { background-color: #555555; color: white; } /* Gri inchis */
+  .gri2 { background-color: #888888; color: white; } /* Gri */
+  .gri3 { background-color: #e7e7e7; color: black; } /* Gri deschis */
+
+  /* Setul 1: Nuanțe de albastru */
+  .albastru.hover { margin:0px; border: 5px solid #0000FF; border-radius: 0px;} /* Albastru */
+  .albastru1 { background-color: #00008B; color: white; } /* Albastru închis */
+  .albastru2 { background-color: #0000FF; color: white; } /* Albastru */
+  .albastru3 { background-color: #008CBA; color: white; } /* Albastru pal */
+  .albastru4 { background-color: #00BFFF; color: black; } /* Albastru deschis */
+  .albastru5 { background-color: #00FFFF; color: black; } /* Cyan */
+
+  /* Setul 2: Nuanțe de verde */
+  .verde.hover { margin:0px; border: 5px solid #008000; border-radius: 0px;} /* Verde */
+  .verde1 { background-color: #006400; color: white; } /* Verde închis */
+  .verde2 { background-color: #008000; color: white; } /* Verde */
+  .verde3 { background-color: #04AA6D; color: white; } /* Verde deschis */
+  .verde4 { background-color: #20B2AA; color: white; } /* Verde marin deschis */
+  .verde5 { background-color: #ADFF2F; color: black; } /* Verde aprins */
+  .verde6 { background-color: #98FB98; color: black; } /* Verde mentă deschis */
+
+  /* Setul 3: Nuanțe de roșu */
+  .rosu.hover { margin:0px; border: 5px solid #f44336; border-radius: 0px;} /* Roșu */
+  .rosu1 { background-color: #8B0000; color: white; } /* Maro intens */
+  .rosu2 { background-color: #FF0000; color: white; } /* Roșu intens */
+  .rosu3 { background-color: #f44336; color: white; } /* Roșu */
+  .rosu4 { background-color: #FFA07A; color: black; } /* Roșu pal */
+  .rosu5 { background-color: #FF69B4; color: white; } /* Roz intens */
+  .rosu6 { background-color: #FFC0CB; color: black; } /* Roz */
+
+  /* Setul 4: Nuanțe de portocaliu */
+  .portocaliu.hover { margin:0px; border: 5px solid #FFA500; border-radius: 0px;} /* Portocaliu */
+  .portocaliu1 { background-color: #8B4513; color: white; } /* Maro pal */
+  .portocaliu2 { background-color: #FF8C00; color: white; } /* Portocaliu intens */
+  .portocaliu3 { background-color: #FFA500; color: black; } /* Portocaliu */
+  .portocaliu4 { background-color: #FFD700; color: black; } /* Auriu */
+  .portocaliu5 { background-color: #FFDAB9; color: black; } /* Portocaliu pal */
+
+  /* Setul 5: Nuanțe de mov */
+  .mov.hover { margin:0px; border: 5px solid #A020F0; border-radius: 0px;} /* Veronica */
+  .mov1 { background-color: #8B008B; color: white; } /* Dark Magenta */
+  .mov2 { background-color: #6F3096; color: white; } /* Tacao */
+  .mov3 { background-color: #A020F0; color: white; } /* Veronica */
+  .mov4 { background-color: #D05FAD; color: white; } /* Hopbush */
+  .mov5 { background-color: #E39FF6; color: black; } /* Lavender */
+
+</style>
+
+</head>
+<body>
+
+
 
 <h1>Execută comenzi Mautic</h1>
 
