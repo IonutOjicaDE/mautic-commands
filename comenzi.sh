@@ -35,8 +35,8 @@ case "$1" in
     # Continua cu logica de actualizare daca nu este cerut undo
 
     echo "Descarc versiunile actuale"
-    wget "https://raw.githubusercontent.com/IonutOjicaDE/mautic-commands/main/$scriptName_ext" -O "${path_scriptName_ext}.new"
-    wget "https://raw.githubusercontent.com/IonutOjicaDE/mautic-commands/main/${scriptName}.php" -O "${path_script}${scriptName}.php.new"
+    wget "https://raw.githubusercontent.com/IonutOjicaDE/mautic-commands/main/$scriptName_ext?$(date +%s)" -O "${path_scriptName_ext}.new"
+    wget "https://raw.githubusercontent.com/IonutOjicaDE/mautic-commands/main/${scriptName}.php?$(date +%s)" -O "${path_script}${scriptName}.php.new"
 
     # Verifica daca fisierul .sh este diferit si actualizeaza
     if ! cmp -s "${path_scriptName_ext}.new" "${path_scriptName_ext}"; then
