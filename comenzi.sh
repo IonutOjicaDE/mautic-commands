@@ -13,7 +13,7 @@ scriptName="${scriptName_ext%.sh}"
 # Verifica daca este solicitata operatiunea de undo
 case "$1" in
   undo|revert|restaureaza|reface)
-    echo "Se efectueaza undo..."
+    echo "$(date +%H:%M:%S) Se efectueaza undo..."
 
     # Verifica si inlocuieste fisierul .sh daca exista backup
     if [ -f "${path_scriptName_ext}.bak" ]; then
@@ -34,7 +34,7 @@ case "$1" in
   *)
     # Continua cu logica de actualizare daca nu este cerut undo
 
-    echo "Descarc versiunile actuale"
+    echo "$(date +%H:%M:%S) Descarc versiunile actuale"
     wget "https://raw.githubusercontent.com/IonutOjicaDE/mautic-commands/main/$scriptName_ext?$(date +%s)" -O "${path_scriptName_ext}.new"
     wget "https://raw.githubusercontent.com/IonutOjicaDE/mautic-commands/main/${scriptName}.php?$(date +%s)" -O "${path_script}${scriptName}.php.new"
 
