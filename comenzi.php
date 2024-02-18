@@ -195,6 +195,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
           "description" => "Actualizează acest utilitar",
           "command" => 'bash '.$dosar_instalare_mautic.'comenzi.sh',
           'color' => 'mov mov1'
+        ],
+        [
+          "description" => "Undo actualizarea utilitarului",
+          "command" => 'bash '.$dosar_instalare_mautic.'comenzi.sh undo',
+          'color' => 'mov mov2'
         ]
       ];
 
