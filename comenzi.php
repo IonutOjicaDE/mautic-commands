@@ -78,7 +78,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         ],
         [
           "description" => 'Restabileşte permisiunile dosarului Mautic',
-          "command" => 'bash /usr/local/bin/reset-permisiuni-mautic.sh',
+          "command" => 'bash /usr/local/bin/reset-permisiuni-mautic'.$instanta_mautic.'.sh',
           'color' => 'verde verde1'
         ],
         [
