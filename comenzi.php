@@ -192,6 +192,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
           'color' => 'rosu rosu5'
         ],
         [
+          "description" => "Optimizează acum baza de date (cke visibility si data-emtpy true)",
+          "command" => 'bash '.$dosar_instalare_cron.'cron-optimizare-bazadate.sh',
+          'color' => 'verde verde3'
+        ],
+        [
           "description" => "Actualizează acest utilitar",
           "command" => 'bash '.$dosar_instalare_mautic.'comenzi.sh',
           'color' => 'mov mov1'
