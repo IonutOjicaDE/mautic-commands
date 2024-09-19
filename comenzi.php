@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-// Generarea token-ului CSRF (Cross-Site Request Forgery token)
+// Generation of CSRF token (Cross-Site Request Forgery token)
 if (empty($_SESSION['csrf_token'])) { $_SESSION['csrf_token'] = bin2hex(random_bytes(32)); }
 
 require '/var/mautic-crons/mautic.php';
@@ -11,234 +11,234 @@ $shouldReload = false;
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
   $user_token = $_POST['csrf_token'];
   if (empty($user_token) || !hash_equals($_SESSION['csrf_token'], $user_token)) {
-    // Token-ul CSRF nu există sau nu se potrivește
-    die('Token-ul CSRF este invalid. Reimprospateaza pagina (Reload / Refresh / F5)');
+    // CSRF Token does not exist or is not the same
+    die('CSRF Token is invalid. Reload / Refresh / F5 the page.');
   } else {
-    // Procesarea formularului
-    $parola = $_POST['parola'];
+    // Process the form
+    $password = $_POST['password'];
     
-    // Verificați dacă parola introdusă corespunde cu cea salvată
-    if ($parola == $mautic_comenzi_secret_key) {
-      $parolaCorecta = true;
-      $durataMaxima = 60;
+    // Check the password
+    if ($password == $MAUTIC_COMMANDS_PASSWORD) {
+      $correctPassword = true;
+      $maximumDuration = 60;
         
-      if (isset($_POST['commandaleasa'])) {
+      if (isset($_POST['$chosencommand'])) {
 
-        $commandAleasa = $_POST['commandaleasa'];
-        $durataMaxima = (int)$_POST['durataslider']; // este "60"
-        set_time_limit($durataMaxima + 20);
+        $$chosenCommand = $_POST['$chosencommand'];
+        $maximumDuration = (int)$_POST['durationslider']; // is "60"
+        set_time_limit($maximumDuration + 20);
 
-        // Deschideți procesul
+        // Open the process
         $descriptorspec = array(
           0 => array("pipe", "r"),  // stdin
           1 => array("pipe", "w"),  // stdout
           2 => array("pipe", "w")   // stderr
         );
-        $process = proc_open($commandAleasa, $descriptorspec, $pipes);
+        $process = proc_open($$chosenCommand, $descriptorspec, $pipes);
 
         if (is_resource($process)) {
-          // Setează timpul de început
-          $timpStart = microtime(true);
+          // Set the starting time
+          $startingTime = microtime(true);
 
           while (true) {
-            // Verificați dacă procesul încă rulează
+            // Check if the process is still running
             $status = proc_get_status($process);
 
             if (!$status['running']) {
-              // Dacă procesul s-a terminat, închideți-l și ieșiți din buclă
+              // If the process has finished, close it and exit the loop
               $output = stream_get_contents($pipes[1]);
               fclose($pipes[1]);
               fclose($pipes[2]);
-              $codRezultat = proc_close($process); // Obține codul de ieșire
+              $exitCode = proc_close($process); // Receive exit code
               break;
-            } else if ((microtime(true) - $timpStart) > $durataMaxima) {
-              // Dacă procesul depășește timpul maxim, închideți-l
+            } else if ((microtime(true) - $startingTime) > $maximumDuration) {
+              // If the process takes more than maximum duration, close it
               proc_terminate($process);
-              $output = "Comanda a fost întreruptă deoarece s-a depășit timpul specificat de " . $durataMaxima . " secunde.";
-              $codRezultat = -2; // Setează un cod de eroare personalizat pentru timeout
+              $output = "The execution was terminated because the duration exceeded " . $maximumDuration . " seconds.";
+              $exitCode = -2; // Set a custom error code for timeout
               break;
             }
-            // Așteptați 0.5s înainte de a verifica din nou
+            // Wait 0.5s before checking again
             usleep(500000);
           }
         }
         
       }
-      $phpConsolePath = 'php '.$dosar_instalare_mautic.'bin/console ';
-      $comenzi = [
+      $phpConsolePath = 'php '.$MAUTIC_FOLDER.'bin/console ';
+      $commands = [
         [
-          'description' => file_exists($dosar_instalare_cron.'DO-NOT-RUN') ? 'Activeaza CronJob-urile' : 'Dezactiveaza CronJob-urile',
-          'command' => 'bash '.$dosar_instalare_cron.'schimbaCronJobs.sh',
-          'color' => 'portocaliu portocaliu2'
+          'description' => file_exists($CRON_FOLDER.'DO-NOT-RUN') ? 'Enable CronJobs' : 'Disable CronJobs',
+          'command' => 'bash '.$CRON_FOLDER.'switchCronJobs.sh',
+          'color' => 'orange orange2'
         ],
         [
-          "description" => "Lista comenzilor Consolei Mautic",
+          "description" => "List all Mautic Console commands",
           "command" => $phpConsolePath.'list',
-          'color' => 'gri gri1'
+          'color' => 'grey grey1'
         ],
         [
-          "description" => 'Restabileşte permisiunile dosarului Mautic',
-          "command" => 'bash /usr/local/bin/reset-permisiuni-mautic'.$instanta_mautic.'.sh',
-          'color' => 'verde verde1'
+          "description" => 'Reset all permissions of the Mautic folders',
+          "command" => 'bash '.$ROOT_FILES_FOLDER.'reset-mautic'.$MAUTIC_COUNT.'-permissions.sh',
+          'color' => 'green green1'
         ],
         [
-          "description" => "Şterge cache-ul",
+          "description" => "Clear the cache",
           "command" => $phpConsolePath.'cache:clear',
-          'color' => 'verde verde2'
+          'color' => 'green green2'
         ],
         [
-          "description" => "Crează acum o copie de rezervă a mautic (baza de date şi dosar Mautic)",
-          "command" => 'bash '.$dosar_instalare_cron.'cron-backup.sh',
-          'color' => 'verde verde3'
+          "description" => "Create now a backup (of database and Mautic folder)",
+          "command" => 'bash '.$CRON_FOLDER.'cron-backup.sh',
+          'color' => 'green green3'
         ],
         [
-          "description" => "Actualizează toate segmentele",
+          "description" => "Update all segments",
           "command" => $phpConsolePath.'mautic:segments:update',
-          'color' => 'albastru albastru1'
+          'color' => 'blue blue1'
         ],
         [
-          "description" => "Actualizează toate campaniile",
+          "description" => "Update all campaigns",
           "command" => $phpConsolePath.'mautic:campaigns:update',
-          'color' => 'albastru albastru2'
+          'color' => 'blue blue2'
         ],
         [
-          "description" => "Proceseaza toate campaniile",
+          "description" => "Process all campaigns",
           "command" => $phpConsolePath.'mautic:campaigns:trigger',
-          'color' => 'albastru albastru2'
+          'color' => 'blue blue2'
         ],
         [
-          "description" => "Trimite emailurile",
+          "description" => "Send emails",
           "command" => $phpConsolePath.'mautic:emails:send',
-          'color' => 'albastru albastru3'
+          'color' => 'blue blue3'
         ],
         [
-          "description" => "Trimite newsletterele",
+          "description" => "Send newsletters",
           "command" => $phpConsolePath.'mautic:broadcasts:send',
-          'color' => 'albastru albastru3'
+          'color' => 'blue blue3'
         ],
         [
-          "description" => "Trimite SMS-urile",
+          "description" => "Send SMSes",
           "command" => $phpConsolePath.'mautic:messages:send',
-          'color' => 'albastru albastru3'
+          'color' => 'blue blue3'
         ],
         [
-          "description" => "Proceseaza rapoartele programate",
+          "description" => "Process scheduled reports",
           "command" => $phpConsolePath.'mautic:reports:scheduler',
-          'color' => 'albastru albastru4'
+          'color' => 'blue blue4'
         ],
         [
-          "description" => "Proceseaza webhook-urile",
+          "description" => "Process webhooks",
           "command" => $phpConsolePath.'mautic:webhooks:process',
-          'color' => 'albastru albastru5'
+          'color' => 'blue blue5'
         ],
         [
-          "description" => "Actualizeaza plugin-urile",
+          "description" => "Update plugins",
           "command" => $phpConsolePath.'mautic:plugins:update',
-          'color' => 'verde verde4'
+          'color' => 'green green4'
         ],
         [
-          "description" => "Importa 600 contacte",
+          "description" => "Import 600 contacts",
           "command" => $phpConsolePath.'mautic:import --limit=600',
-          'color' => 'albastru albastru5'
+          'color' => 'blue blue5'
         ],
         [
-          "description" => "Arata info mai vechi de 90 de zile ce pot fi sterse",
+          "description" => "Show the info older than 90 days that can be deleted",
           "command" => $phpConsolePath.'mautic:maintenance:cleanup --no-interaction --days-old=90 --dry-run',
-          'color' => 'portocaliu portocaliu2'
+          'color' => 'orange orange2'
         ],
         [
-          "description" => "Sterge info mai vechi de 90 de zile",
+          "description" => "Delete info older than 90 days",
           "command" => $phpConsolePath.'mautic:maintenance:cleanup --no-interaction --days-old=90',
-          'color' => 'rosu rosu1'
+          'color' => 'red red1'
         ],
         [
-          "description" => "Deduplicarea contactelor",
+          "description" => "Deduplicate contacts",
           "command" => $phpConsolePath.'mautic:contacts:deduplicate',
-          'color' => 'rosu rosu2'
+          'color' => 'red red2'
         ],
         [
-          "description" => "Şterge IP-urile nefolosite",
+          "description" => "Delete unused IPs",
           "command" => $phpConsolePath.'mautic:unusedip:delete',
-          'color' => 'rosu rosu3'
+          'color' => 'red red3'
         ],
         [
-          "description" => "Actualizează baza de date MaxMind",
+          "description" => "Update MaxMind database",
           "command" => $phpConsolePath.'mautic:iplookup:download',
-          'color' => 'verde verde5'
+          'color' => 'green green5'
         ],
         [
-          "description" => "Vezi starea migrărilor",
+          "description" => "Check migration status",
           "command" => $phpConsolePath.'doctrine:migrations:status',
-          'color' => 'portocaliu portocaliu3'
+          'color' => 'orange orange3'
         ],
         [
-          "description" => "Validează starea migrărilor",
+          "description" => "Validate migration status",
           "command" => $phpConsolePath.'doctrine:schema:validate',
-          'color' => 'portocaliu portocaliu4'
+          'color' => 'orange orange4'
         ],
         [
-          "description" => "Afişează comenzile SQL pentru a actualiza baza de date",
+          "description" => "Show SQL commands to update database",
           "command" => $phpConsolePath.'doctrine:schema:update --dump-sql',
-          'color' => 'portocaliu portocaliu5'
+          'color' => 'orange orange5'
         ],
         [
-          "description" => "Resetează statistica emailurilor de la Webinarii",
+          "description" => "Reset stats of emails for Webinar",
           "command" => $phpConsolePath."doctrine:query:sql \"UPDATE emails SET read_count = 0, sent_count = 0, variant_sent_count = 0, variant_read_count = 0 WHERE id IN (SELECT e.id FROM emails e JOIN categories c ON e.category_id = c.id WHERE LOWER(c.title) LIKE '%webinar%');\"",
-          'color' => 'rosu rosu4'
+          'color' => 'red red4'
         ],
         [
-          "description" => "Şterg email_stats pentru emailurile de Webinarii",
+          "description" => "Remove email_stats from emails for Webinar",
           "command" => $phpConsolePath."doctrine:query:sql \"DELETE FROM email_stats WHERE email_id IN (SELECT e.id FROM emails e JOIN categories c ON e.category_id = c.id WHERE LOWER(c.title) LIKE '%webinar%');\"",
-          'color' => 'rosu rosu5'
+          'color' => 'red red5'
         ],
         [
-          "description" => "Optimizează acum baza de date (cke visibility si data-emtpy true)",
-          "command" => 'bash '.$dosar_instalare_cron.'cron-optimizare-bazadate.sh',
-          'color' => 'verde verde3'
+          "description" => "Optimize now the database (cke visibility and data-empty true)",
+          "command" => 'bash '.$CRON_FOLDER.'cron-database-optimization.sh',
+          'color' => 'green green3'
         ],
         [
-          "description" => "Actualizează acest utilitar",
-          "command" => 'bash '.$dosar_instalare_mautic.'comenzi.sh',
-          'color' => 'mov mov1'
+          "description" => "Update this utility",
+          "command" => 'bash '.$MAUTIC_FOLDER.'commands.sh',
+          'color' => 'purple purple1'
         ],
         [
-          "description" => "Undo actualizarea utilitarului",
-          "command" => 'bash '.$dosar_instalare_mautic.'comenzi.sh undo',
-          'color' => 'mov mov2'
+          "description" => "Undo the update of this utility",
+          "command" => 'bash '.$MAUTIC_FOLDER.'commands.sh undo',
+          'color' => 'purple purple2'
         ]
       ];
 
-      if (isset($commandAleasa)) {
-        foreach ($comenzi as $index => $command) {
-          if ($command['command'] === $commandAleasa) {
-            $descriptionGasita = $command['description'];
+      if (isset($$chosenCommand)) {
+        foreach ($commands as $index => $command) {
+          if ($command['command'] === $$chosenCommand) {
+            $descriptionFound = $command['description'];
             break;
           }
         }
       }
 
-      // Resetați numărul de încercări eșuate
-      $_SESSION['incercari_esuate'] = 0;
+      // Reset faild tries count
+      $_SESSION['failed_auth'] = 0;
     } else {
-      $parolaCorecta = false;
-      // Înregistrați ora încercării de autentificare eșuate și adresa IP a utilizatorului
-      $_SESSION['ultima_incercare'] = time();
+      $correctPassword = false;
+      // Record the time of the faild authentification and the IP
+      $_SESSION['last_attempt'] = time();
       $_SESSION['ip'] = $_SERVER['REMOTE_ADDR'];
 
-      // Incrementați numărul de încercări eșuate
-      if (!isset($_SESSION['incercari_esuate'])) {
-        $_SESSION['incercari_esuate'] = 0;
+      // Increment the number of failed tries
+      if (!isset($_SESSION['failed_auth'])) {
+        $_SESSION['failed_auth'] = 0;
       }
-      $_SESSION['incercari_esuate']++;
+      $_SESSION['failed_auth']++;
 
-      // Calculați întârzierea crescatoare
-      $intarziere = pow(2, $_SESSION['incercari_esuate']);
+      // Calculate increasing delay
+      $delay = pow(2, $_SESSION['failed_auth']);
 
-      // Verificați dacă a trecut timp de la ultima încercare
-      if (isset($_SESSION['ultima_incercare']) && (time() - $_SESSION['ultima_incercare']) < $intarziere) {
-        echo "Ați introdus o parolă incorectă. Vă rugăm să așteptați " . $intarziere . " secunde înainte de a încerca din nou.";
+      // Check if the necessary delay from the last verification has passed
+      if (isset($_SESSION['last_attempt']) && (time() - $_SESSION['last_attempt']) < $delay) {
+        echo "You have entered an incorrect password. Please wait " . $delay. " seconds before trying again.";
       } else {
-        echo "Parola incorectă.";
+        echo "Incorrect password.";
       }
     }
   }
@@ -248,7 +248,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Comenzi utile pentru Mautic</title>
+  <title>Useful commands for Mautic</title>
 
 <style>
   input::placeholder, textarea::placeholder {text-align:center;}
@@ -262,7 +262,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   input[type="submit"]:hover {opacity:1;}
   input[type="submit"]:disabled {background-color:#f0f0f0;cursor:not-allowed;}
   
-  .comenzi-container {display:flex; flex-wrap:wrap; gap:0px;}
+  .commands-container {display:flex; flex-wrap:wrap; gap:0px;}
   input[type="radio"] {display:none;}
   div.command-container {
     display: flex;
@@ -292,53 +292,53 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     width:25px;height:25px;border-radius:50%; background:#4CAF50; cursor:pointer;}
   input[type="range"]::-moz-range-thumb {width:25px; height:25px; border-radius:50%; background:#4CAF50; cursor:pointer;}
 
-  /* Definirea culorilor pentru butoane */
-  .gri.hover { margin:0px; border: 5px solid #888888; border-radius: 0px; } /* Gri inchis */
-  .gri1 { background-color: #555555; color: white; } /* Gri inchis */
-  .gri2 { background-color: #888888; color: white; } /* Gri */
-  .gri3 { background-color: #e7e7e7; color: black; } /* Gri deschis */
+  /* Defining colors for buttons */
+  .grey.hover { margin:0px; border: 5px solid #888888; border-radius: 0px; } /* Grey inchis */
+  .grey1 { background-color: #555555; color: white; } /* Dark Grey */
+  .grey2 { background-color: #888888; color: white; } /* Grey */
+  .grey3 { background-color: #e7e7e7; color: black; } /* Light Grey */
 
-  /* Setul 1: Nuanțe de albastru */
-  .albastru.hover { margin:0px; border: 5px solid #0000FF; border-radius: 0px;} /* Albastru */
-  .albastru1 { background-color: #00008B; color: white; } /* Albastru închis */
-  .albastru2 { background-color: #0000FF; color: white; } /* Albastru */
-  .albastru3 { background-color: #008CBA; color: white; } /* Albastru pal */
-  .albastru4 { background-color: #00BFFF; color: black; } /* Albastru deschis */
-  .albastru5 { background-color: #00FFFF; color: black; } /* Cyan */
+  /* Set 1: Shades of blue */
+  .blue.hover { margin:0px; border: 5px solid #0000FF; border-radius: 0px;} /* Blue */
+  .blue1 { background-color: #00008B; color: white; } /* Dark Blue */
+  .blue2 { background-color: #0000FF; color: white; } /* Blue */
+  .blue3 { background-color: #008CBA; color: white; } /* Blue pal */
+  .blue4 { background-color: #00BFFF; color: black; } /* Light Blue */
+  .blue5 { background-color: #00FFFF; color: black; } /* Cyan */
 
-  /* Setul 2: Nuanțe de verde */
-  .verde.hover { margin:0px; border: 5px solid #008000; border-radius: 0px;} /* Verde */
-  .verde1 { background-color: #006400; color: white; } /* Verde închis */
-  .verde2 { background-color: #008000; color: white; } /* Verde */
-  .verde3 { background-color: #04AA6D; color: white; } /* Verde deschis */
-  .verde4 { background-color: #20B2AA; color: white; } /* Verde marin deschis */
-  .verde5 { background-color: #ADFF2F; color: black; } /* Verde aprins */
-  .verde6 { background-color: #98FB98; color: black; } /* Verde mentă deschis */
+  /* Set 1: Shades of green */
+  .green.hover { margin:0px; border: 5px solid #008000; border-radius: 0px;} /* Green */
+  .green1 { background-color: #006400; color: white; } /* Dark Green */
+  .green2 { background-color: #008000; color: white; } /* Green */
+  .green3 { background-color: #04AA6D; color: white; } /* Light Green */
+  .green4 { background-color: #20B2AA; color: white; } /* Light Blue-Green */
+  .green5 { background-color: #ADFF2F; color: black; } /* Bright Green */
+  .green6 { background-color: #98FB98; color: black; } /* Light Mint Green */
 
-  /* Setul 3: Nuanțe de roșu */
-  .rosu.hover { margin:0px; border: 5px solid #f44336; border-radius: 0px;} /* Roșu */
-  .rosu1 { background-color: #8B0000; color: white; } /* Maro intens */
-  .rosu2 { background-color: #FF0000; color: white; } /* Roșu intens */
-  .rosu3 { background-color: #f44336; color: white; } /* Roșu */
-  .rosu4 { background-color: #FFA07A; color: black; } /* Roșu pal */
-  .rosu5 { background-color: #FF69B4; color: white; } /* Roz intens */
-  .rosu6 { background-color: #FFC0CB; color: black; } /* Roz */
+  /* Set 1: Shades of red */
+  .red.hover { margin:0px; border: 5px solid #f44336; border-radius: 0px;} /* Red */
+  .red1 { background-color: #8B0000; color: white; } /* Brown intens */
+  .red2 { background-color: #FF0000; color: white; } /* Red intens */
+  .red3 { background-color: #f44336; color: white; } /* Red */
+  .red4 { background-color: #FFA07A; color: black; } /* Red pal */
+  .red5 { background-color: #FF69B4; color: white; } /* Pink intens */
+  .red6 { background-color: #FFC0CB; color: black; } /* Pink */
 
-  /* Setul 4: Nuanțe de portocaliu */
-  .portocaliu.hover { margin:0px; border: 5px solid #FFA500; border-radius: 0px;} /* Portocaliu */
-  .portocaliu1 { background-color: #8B4513; color: white; } /* Maro pal */
-  .portocaliu2 { background-color: #FF8C00; color: white; } /* Portocaliu intens */
-  .portocaliu3 { background-color: #FFA500; color: black; } /* Portocaliu */
-  .portocaliu4 { background-color: #FFD700; color: black; } /* Auriu */
-  .portocaliu5 { background-color: #FFDAB9; color: black; } /* Portocaliu pal */
+  /* Set 1: Shades of orange */
+  .orange.hover { margin:0px; border: 5px solid #FFA500; border-radius: 0px;} /* Orange */
+  .orange1 { background-color: #8B4513; color: white; } /* Brown pal */
+  .orange2 { background-color: #FF8C00; color: white; } /* Orange intens */
+  .orange3 { background-color: #FFA500; color: black; } /* Orange */
+  .orange4 { background-color: #FFD700; color: black; } /* Auriu */
+  .orange5 { background-color: #FFDAB9; color: black; } /* Orange pal */
 
-  /* Setul 5: Nuanțe de mov */
-  .mov.hover { margin:0px; border: 5px solid #A020F0; border-radius: 0px;} /* Veronica */
-  .mov1 { background-color: #8B008B; color: white; } /* Dark Magenta */
-  .mov2 { background-color: #6F3096; color: white; } /* Tacao */
-  .mov3 { background-color: #A020F0; color: white; } /* Veronica */
-  .mov4 { background-color: #D05FAD; color: white; } /* Hopbush */
-  .mov5 { background-color: #E39FF6; color: black; } /* Lavender */
+  /* Set 1: Shades of purple */
+  .purple.hover { margin:0px; border: 5px solid #A020F0; border-radius: 0px;} /* Veronica */
+  .purple1 { background-color: #8B008B; color: white; } /* Dark Magenta */
+  .purple2 { background-color: #6F3096; color: white; } /* Tacao */
+  .purple3 { background-color: #A020F0; color: white; } /* Veronica */
+  .purple4 { background-color: #D05FAD; color: white; } /* Hopbush */
+  .purple5 { background-color: #E39FF6; color: black; } /* Lavender */
 
 </style>
 
@@ -347,19 +347,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 
 
-<h1>Execută comenzi Mautic</h1>
+<h1>Execute Mautic commands</h1>
 
 <form method="post">
   <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
-  <label>1. Introdu Parola necesară:<br>
-    <input type="password" name="parola" placeholder="parola" value="<?php echo $parola; ?>">
+  <label>1. Enter the password:<br>
+    <input type="password" name="password" placeholder="password" value="<?php echo $password; ?>">
   </label>
   <br><br><br>
-<?php if ($parolaCorecta): ?>
-  2. Alege o comandă pentru a fi executată:
+<?php if ($correctPassword): ?>
+  2. Choose a command to execute:
   <br>
-  <div class="comenzi-container">
-    <?php foreach ($comenzi as $index => $command) : ?>
+  <div class="commands-container">
+    <?php foreach ($commands as $index => $command) : ?>
     <div class="command-container <?php echo htmlspecialchars($command['color']); ?>">
       <input type="radio" class="radio-command" id="command<?php echo $index; ?>" name="command" value="<?php echo $index; ?>">
       <label for="command<?php echo $index; ?>" name="description"><?php echo $command['description']; ?></label><br>
@@ -368,21 +368,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <?php endforeach; ?>
   </div>
   <br><br>
-  <label>3. Comanda aleasă: <span id="commanddescription"><?php echo $descriptionGasita; ?></span><br>
-    <textarea rows="4" cols="60" name="commandaleasa" placeholder="alege o comandă"><?php echo $commandAleasa; ?></textarea>
+  <label>3. Chosen command: <span id="commanddescription"><?php echo $descriptionFound; ?></span><br>
+    <textarea rows="4" cols="60" name="$chosencommand" placeholder="alege o comandă"><?php echo $$chosenCommand; ?></textarea>
   </label><br><br><br>
-  <label>4. Durata maximă de execuție: <span id="duratavaloare"><?php echo $durataMaxima; ?></span>s<br>
-    10s <input type="range" min="10" max="120" value="<?php echo $durataMaxima; ?>" step="10" name="durataslider"> 120s
+  <label>4. Maximum execution duration: <span id="durationvalue"><?php echo $maximumDuration; ?></span>s<br>
+    10s <input type="range" min="10" max="120" value="<?php echo $maximumDuration; ?>" step="10" name="durationslider"> 120s
   </label><br><br>
 <?php endif; ?>
   <input type="submit">
 </form>
 
-<?php if ($parolaCorecta): ?>
+<?php if ($correctPassword): ?>
 <hr>
 
 <div id="rezultat">
-  <h2>Rezultatul comenzii: <span id="cod-rezultat"><?php echo htmlspecialchars($codRezultat); ?></span></h2>
+  <h2>Command Output: <span id="cod-rezultat"><?php echo htmlspecialchars($exitCode); ?></span></h2>
   <div id="outputdiv">
     <pre id="output"><?php echo htmlspecialchars($output); ?></pre>
   </div>
@@ -390,9 +390,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <?php endif; ?>
 
 <script>
-<?php if ($parolaCorecta): ?>
-var slider = document.querySelector('input[name="durataslider"]');
-var output = document.getElementById("duratavaloare");
+<?php if ($correctPassword): ?>
+var slider = document.querySelector('input[name="durationslider"]');
+var output = document.getElementById("durationvalue");
 output.innerHTML = slider.value;
 
 slider.oninput = function() {
@@ -400,10 +400,10 @@ slider.oninput = function() {
 }
 
 
-// Selectăm toate label-urile cu name="command" din div-urile command-container
+// We select all labels with name="command" from the command-container divs
 var commandLabels = document.querySelectorAll('.command-container label[name="command"]');
 
-// Creăm un array pentru a stoca conținutul text al acestor label-uri
+// We create an array to store the text content of these labels
 var comenzi = Array.from(commandLabels).map(function(label) {
   return label.textContent;
 });
@@ -415,27 +415,27 @@ commandContainers.forEach(function(container) {
     var description = container.querySelector('label[name="description"]').textContent;
     var command = container.querySelector('label[name="command"]').textContent;
     
-    // Îndepărtează clasa de la toate div-urile
+    // Removes the class from all divs
     document.querySelectorAll('.command-container').forEach(function(div) {
       div.classList.remove('div-selectat');
     });
     container.classList.add('div-selectat');
     radio.checked = true;
     var description1 = document.getElementById('commanddescription');
-    var command1 = document.querySelector('textarea[name="commandaleasa"]');
+    var command1 = document.querySelector('textarea[name="$chosencommand"]');
 
-    // Verificăm dacă textul din textarea se află în lista de etichete sau dacă este gol
+    // We check if the text in the text is in the list of tags or if it is empty
     if (command1.value && !comenzi.includes(command1.value)) {
-      // Dacă nu este, afișăm o fereastră de confirmare
+      // If it is not, we display a confirmation window
       var confirm = window.confirm('Doriți să suprascrieți textul existent?');
       
-      // Dacă utilizatorul confirmă, copiem textul etichetei în caseta de text "commandaleasa"
+      // If the user confirms, we copy the label text into the text box "$chosencommand"
       if (confirm) {
         description1.textContent = description;
         command1.value = command;
       }
     } else {
-      // Dacă textul din textarea se află în lista de etichete sau este gol, îl suprascriem
+      // If the text in the text is in the tag list or is empty, we overwrite it
       description1.textContent = description;
       command1.value = command;
     }
@@ -444,21 +444,21 @@ commandContainers.forEach(function(container) {
 <?php endif; ?>
 
 window.onload = function() {
-  var parola = document.querySelector('input[name="parola"]');
+  var password = document.querySelector('input[name="password"]');
   var submit = document.querySelector('input[type="submit"]');
-<?php if ($parolaCorecta): ?>
+<?php if ($correctPassword): ?>
   var commandContainers = document.querySelectorAll('.command-container');
   var description = document.querySelectorAll('label[name="description"]');
   var command = document.querySelectorAll('label[name="command"]');
-  var commandaleasa = document.querySelector('textarea[name="commandaleasa"]');
+  var $chosencommand = document.querySelector('textarea[name="$chosencommand"]');
 <?php endif; ?>
 
   function checkInput() {
-    submit.disabled = (parola.value === '' <?php if ($parolaCorecta) echo " || commandaleasa.value === ''"; ?>);
+    submit.disabled = (password.value === '' <?php if ($correctPassword) echo " || $chosencommand.value === ''"; ?>);
   }
 
-  parola.addEventListener('input', checkInput);
-<?php if ($parolaCorecta): ?>
+  password.addEventListener('input', checkInput);
+<?php if ($correctPassword): ?>
   commandContainers.forEach(function(radio) {
     radio.addEventListener('click', checkInput);
   });
@@ -468,31 +468,31 @@ window.onload = function() {
   command.forEach(function(radio) {
     radio.addEventListener('click', checkInput);
   });
-  commandaleasa.addEventListener('input', checkInput);
+  $chosencommand.addEventListener('input', checkInput);
 <?php endif; ?>
 
-  // Verifică imediat la încărcarea paginii
+  // Checks immediately on page load
   checkInput();
 
-<?php if ($parolaCorecta): ?>
-  // Selectează toate seturile de butoane
-  var sets = ['gri', 'albastru', 'verde', 'rosu', 'portocaliu', 'mov'];
+<?php if ($correctPassword): ?>
+  // Select all button sets
+  var sets = ['grey', 'blue', 'green', 'red', 'orange', 'purple'];
 
   sets.forEach(function(set) {
-    // Selectează toate butoanele din setul curent
+    // Selects all buttons in the current set
     var buttons = document.getElementsByClassName(set);
 
-    // Adaugă evenimente de 'mouseover' și 'mouseout' fiecărui buton
+    // Add 'mouseover' and 'mouseout' events to each button
     for (var i = 0; i < buttons.length; i++) {
       buttons[i].addEventListener('mouseover', function() {
-        // Adaugă clasa 'hover' la toate butoanele din setul curent când unul este hover
+        // Adds the 'hover' class to all buttons in the current set when one is hovering
         for (var j = 0; j < buttons.length; j++) {
           buttons[j].classList.add('hover');
         }
       });
 
       buttons[i].addEventListener('mouseout', function() {
-        // Elimină clasa 'hover' de la toate butoanele din setul curent când hover-ul se termină
+        // Removes the 'hover' class from all buttons in the current set when the hover ends
         for (var j = 0; j < buttons.length; j++) {
           buttons[j].classList.remove('hover');
         }
