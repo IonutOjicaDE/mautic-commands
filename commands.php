@@ -404,7 +404,7 @@ slider.oninput = function() {
 var commandLabels = document.querySelectorAll('.command-container label[name="command"]');
 
 // We create an array to store the text content of these labels
-var comenzi = Array.from(commandLabels).map(function(label) {
+var commands = Array.from(commandLabels).map(function(label) {
   return label.textContent;
 });
 
@@ -425,7 +425,7 @@ commandContainers.forEach(function(container) {
     var command1 = document.querySelector('textarea[name="$chosencommand"]');
 
     // We check if the text in the text is in the list of tags or if it is empty
-    if (command1.value && !comenzi.includes(command1.value)) {
+    if (command1.value && !commands.includes(command1.value)) {
       // If it is not, we display a confirmation window
       var confirm = window.confirm('Doriți să suprascrieți textul existent?');
       
