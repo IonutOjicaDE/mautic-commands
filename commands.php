@@ -64,7 +64,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
         
       }
-      $phpConsolePath = "php .${MAUTIC_FOLDER}bin/console ";
+      $phpConsolePath = "php ${MAUTIC_FOLDER}bin/console";
       $commands = [
         [
           'description' => file_exists("${CRON_FOLDER}DO-NOT-RUN") ? 'Enable CronJobs' : 'Disable CronJobs',
@@ -73,7 +73,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         ],
         [
           "description" => "List all Mautic Console commands",
-          "command" => "${phpConsolePath}list",
+          "command" => "${phpConsolePath} list",
           'color' => 'grey grey1'
         ],
         [
@@ -83,7 +83,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         ],
         [
           "description" => "Clear the cache",
-          "command" => "${phpConsolePath}cache:clear",
+          "command" => "${phpConsolePath} cache:clear",
           'color' => 'green green2'
         ],
         [
@@ -93,102 +93,102 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         ],
         [
           "description" => "Update all segments",
-          "command" => "${phpConsolePath}mautic:segments:update",
+          "command" => "${phpConsolePath} mautic:segments:update",
           'color' => 'blue blue1'
         ],
         [
           "description" => "Update all campaigns",
-          "command" => "${phpConsolePath}mautic:campaigns:update",
+          "command" => "${phpConsolePath} mautic:campaigns:update",
           'color' => 'blue blue2'
         ],
         [
           "description" => "Process all campaigns",
-          "command" => "${phpConsolePath}mautic:campaigns:trigger",
+          "command" => "${phpConsolePath} mautic:campaigns:trigger",
           'color' => 'blue blue2'
         ],
         [
           "description" => "Send emails",
-          "command" => "${phpConsolePath}mautic:emails:send",
+          "command" => "${phpConsolePath} mautic:emails:send",
           'color' => 'blue blue3'
         ],
         [
           "description" => "Send newsletters",
-          "command" => "${phpConsolePath}mautic:broadcasts:send",
+          "command" => "${phpConsolePath} mautic:broadcasts:send",
           'color' => 'blue blue3'
         ],
         [
           "description" => "Send SMSes",
-          "command" => "${phpConsolePath}mautic:messages:send",
+          "command" => "${phpConsolePath} mautic:messages:send",
           'color' => 'blue blue3'
         ],
         [
           "description" => "Process scheduled reports",
-          "command" => "${phpConsolePath}mautic:reports:scheduler",
+          "command" => "${phpConsolePath} mautic:reports:scheduler",
           'color' => 'blue blue4'
         ],
         [
           "description" => "Process webhooks",
-          "command" => "${phpConsolePath}mautic:webhooks:process",
+          "command" => "${phpConsolePath} mautic:webhooks:process",
           'color' => 'blue blue5'
         ],
         [
           "description" => "Update plugins",
-          "command" => "${phpConsolePath}mautic:plugins:update",
+          "command" => "${phpConsolePath} mautic:plugins:update",
           'color' => 'green green4'
         ],
         [
           "description" => "Import 600 contacts",
-          "command" => "${phpConsolePath}mautic:import --limit=600",
+          "command" => "${phpConsolePath} mautic:import --limit=600",
           'color' => 'blue blue5'
         ],
         [
           "description" => "Show the info older than 90 days that can be deleted",
-          "command" => "${phpConsolePath}mautic:maintenance:cleanup --no-interaction --days-old=90 --dry-run",
+          "command" => "${phpConsolePath} mautic:maintenance:cleanup --no-interaction --days-old=90 --dry-run",
           'color' => 'orange orange2'
         ],
         [
           "description" => "Delete info older than 90 days",
-          "command" => "${phpConsolePath}mautic:maintenance:cleanup --no-interaction --days-old=90",
+          "command" => "${phpConsolePath} mautic:maintenance:cleanup --no-interaction --days-old=90",
           'color' => 'red red1'
         ],
         [
           "description" => "Deduplicate contacts",
-          "command" => "${phpConsolePath}mautic:contacts:deduplicate",
+          "command" => "${phpConsolePath} mautic:contacts:deduplicate",
           'color' => 'red red2'
         ],
         [
           "description" => "Delete unused IPs",
-          "command" => "${phpConsolePath}mautic:unusedip:delete",
+          "command" => "${phpConsolePath} mautic:unusedip:delete",
           'color' => 'red red3'
         ],
         [
           "description" => "Update MaxMind database",
-          "command" => "${phpConsolePath}mautic:iplookup:download",
+          "command" => "${phpConsolePath} mautic:iplookup:download",
           'color' => 'green green5'
         ],
         [
           "description" => "Check migration status",
-          "command" => "${phpConsolePath}doctrine:migrations:status",
+          "command" => "${phpConsolePath} doctrine:migrations:status",
           'color' => 'orange orange3'
         ],
         [
           "description" => "Validate migration status",
-          "command" => "${phpConsolePath}doctrine:schema:validate",
+          "command" => "${phpConsolePath} doctrine:schema:validate",
           'color' => 'orange orange4'
         ],
         [
           "description" => "Show SQL commands to update database",
-          "command" => "${phpConsolePath}doctrine:schema:update --dump-sql",
+          "command" => "${phpConsolePath} doctrine:schema:update --dump-sql",
           'color' => 'orange orange5'
         ],
         [
           "description" => "Reset stats of emails for Webinar",
-          "command" => "${phpConsolePath}doctrine:query:sql \"UPDATE emails SET read_count = 0, sent_count = 0, variant_sent_count = 0, variant_read_count = 0 WHERE id IN (SELECT e.id FROM emails e JOIN categories c ON e.category_id = c.id WHERE LOWER(c.title) LIKE '%webinar%');\"",
+          "command" => "${phpConsolePath} doctrine:query:sql \"UPDATE emails SET read_count = 0, sent_count = 0, variant_sent_count = 0, variant_read_count = 0 WHERE id IN (SELECT e.id FROM emails e JOIN categories c ON e.category_id = c.id WHERE LOWER(c.title) LIKE '%webinar%');\"",
           'color' => 'red red4'
         ],
         [
           "description" => "Remove email_stats from emails for Webinar",
-          "command" => "${phpConsolePath}doctrine:query:sql \"DELETE FROM email_stats WHERE email_id IN (SELECT e.id FROM emails e JOIN categories c ON e.category_id = c.id WHERE LOWER(c.title) LIKE '%webinar%');\"",
+          "command" => "${phpConsolePath} doctrine:query:sql \"DELETE FROM email_stats WHERE email_id IN (SELECT e.id FROM emails e JOIN categories c ON e.category_id = c.id WHERE LOWER(c.title) LIKE '%webinar%');\"",
           'color' => 'red red5'
         ],
         [
@@ -198,12 +198,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         ],
         [
           "description" => "Update this utility",
-          "command" => "bash ${MAUTIC_FOLDER}commands.sh",
+          "command" => "bash ${MAUTIC_FOLDER}commands/commands.sh",
           'color' => 'purple purple1'
         ],
         [
           "description" => "Undo the update of this utility",
-          "command" => "bash ${MAUTIC_FOLDER}commands.sh undo",
+          "command" => "bash ${MAUTIC_FOLDER}commands/commands.sh undo",
           'color' => 'purple purple2'
         ]
       ];
