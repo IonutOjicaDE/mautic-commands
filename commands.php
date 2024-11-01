@@ -6,6 +6,24 @@ if (empty($_SESSION['csrf_token'])) { $_SESSION['csrf_token'] = bin2hex(random_b
 
 require '/var/mautic-crons/mautic.php';
 
+// Check if var $MAUTIC_FOLDER is defined
+if (!isset($MAUTIC_FOLDER)) {
+  header("HTTP/1.0 404 Not Found");
+  echo "Error 404: Utility script not found and not loaded. Please check the location of the script.";
+  exit;
+}
+
+// If the folder variables are ending with "/", remove it (backward compatibility)
+if (substr($MAUTIC_FOLDER, -1) === '/') {
+  $MAUTIC_FOLDER = rtrim($MAUTIC_FOLDER, '/');
+}
+if (substr($CRON_FOLDER, -1) === '/') {
+  $CRON_FOLDER = rtrim($CRON_FOLDER, '/');
+}
+if (substr($ROOT_FILES_FOLDER, -1) === '/') {
+  $ROOT_FILES_FOLDER = rtrim($ROOT_FILES_FOLDER, '/');
+}
+
 $shouldReload = false;
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -22,9 +40,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       $correctPassword = true;
       $maximumDuration = 60;
         
-      if (isset($_POST['$chosencommand'])) {
+      if (isset($_POST['chosencommand'])) {
 
-        $$chosenCommand = $_POST['$chosencommand'];
+        $chosenCommand = $_POST['chosencommand'];
         $maximumDuration = (int)$_POST['durationslider']; // is "60"
         set_time_limit($maximumDuration + 20);
 
@@ -34,7 +52,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
           1 => array("pipe", "w"),  // stdout
           2 => array("pipe", "w")   // stderr
         );
-        $process = proc_open($$chosenCommand, $descriptorspec, $pipes);
+        $process = proc_open($chosenCommand, $descriptorspec, $pipes);
 
         if (is_resource($process)) {
           // Set the starting time
@@ -64,11 +82,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
         
       }
-      $phpConsolePath = "php ${MAUTIC_FOLDER}bin/console";
+      $phpConsolePath = "php ${MAUTIC_FOLDER}/bin/console";
       $commands = [
         [
-          'description' => file_exists("${CRON_FOLDER}DO-NOT-RUN") ? 'Enable CronJobs' : 'Disable CronJobs',
-          'command' => "bash ${CRON_FOLDER}switchCronJobs.sh",
+          'description' => file_exists("${CRON_FOLDER}/DO-NOT-RUN") ? 'Enable CronJobs' : 'Disable CronJobs',
+          'command' => "bash ${CRON_FOLDER}/switchCronJobs.sh",
           'color' => 'orange orange2'
         ],
         [
@@ -78,7 +96,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         ],
         [
           "description" => 'Reset all permissions of the Mautic folders',
-          "command" => "bash ${ROOT_FILES_FOLDER}reset-mautic${MAUTIC_COUNT}-permissions.sh",
+          "command" => "bash ${ROOT_FILES_FOLDER}/reset-mautic${MAUTIC_COUNT}-permissions.sh",
           'color' => 'green green1'
         ],
         [
@@ -88,7 +106,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         ],
         [
           "description" => "Create now a backup (of database and Mautic folder)",
-          "command" => "bash ${CRON_FOLDER}cron-backup.sh",
+          "command" => "bash ${CRON_FOLDER}/cron-backup.sh",
           'color' => 'green green3'
         ],
         [
@@ -193,24 +211,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         ],
         [
           "description" => "Optimize now the database (cke visibility and data-empty true)",
-          "command" => "bash ${CRON_FOLDER}cron-database-optimization.sh",
+          "command" => "bash ${CRON_FOLDER}/cron-database-optimization.sh",
           'color' => 'green green3'
         ],
         [
           "description" => "Update this utility",
-          "command" => "bash ${MAUTIC_FOLDER}commands/commands.sh",
+          "command" => "bash ${MAUTIC_FOLDER}/commands/commands.sh",
           'color' => 'purple purple1'
         ],
         [
           "description" => "Undo the update of this utility",
-          "command" => "bash ${MAUTIC_FOLDER}commands/commands.sh undo",
+          "command" => "bash ${MAUTIC_FOLDER}/commands/commands.sh undo",
           'color' => 'purple purple2'
         ]
       ];
 
-      if (isset($$chosenCommand)) {
+      if (isset($chosenCommand)) {
         foreach ($commands as $index => $command) {
-          if ($command['command'] === $$chosenCommand) {
+          if ($command['command'] === $chosenCommand) {
             $descriptionFound = $command['description'];
             break;
           }
@@ -369,7 +387,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   </div>
   <br><br>
   <label>3. Chosen command: <span id="commanddescription"><?php echo $descriptionFound; ?></span><br>
-    <textarea rows="4" cols="60" name="$chosencommand" placeholder="alege o comandă"><?php echo $$chosenCommand; ?></textarea>
+    <textarea rows="4" cols="60" name="chosencommand" placeholder="alege o comandă"><?php echo $chosenCommand; ?></textarea>
   </label><br><br><br>
   <label>4. Maximum execution duration: <span id="durationvalue"><?php echo $maximumDuration; ?></span>s<br>
     10s <input type="range" min="10" max="120" value="<?php echo $maximumDuration; ?>" step="10" name="durationslider"> 120s
@@ -422,14 +440,14 @@ commandContainers.forEach(function(container) {
     container.classList.add('div-selectat');
     radio.checked = true;
     var description1 = document.getElementById('commanddescription');
-    var command1 = document.querySelector('textarea[name="$chosencommand"]');
+    var command1 = document.querySelector('textarea[name="chosencommand"]');
 
     // We check if the text in the text is in the list of tags or if it is empty
     if (command1.value && !commands.includes(command1.value)) {
       // If it is not, we display a confirmation window
       var confirm = window.confirm('Doriți să suprascrieți textul existent?');
       
-      // If the user confirms, we copy the label text into the text box "$chosencommand"
+      // If the user confirms, we copy the label text into the text box "chosencommand"
       if (confirm) {
         description1.textContent = description;
         command1.value = command;
@@ -450,11 +468,11 @@ window.onload = function() {
   var commandContainers = document.querySelectorAll('.command-container');
   var description = document.querySelectorAll('label[name="description"]');
   var command = document.querySelectorAll('label[name="command"]');
-  var $chosencommand = document.querySelector('textarea[name="$chosencommand"]');
+  var chosencommand = document.querySelector('textarea[name="chosencommand"]');
 <?php endif; ?>
 
   function checkInput() {
-    submit.disabled = (password.value === '' <?php if ($correctPassword) echo " || $chosencommand.value === ''"; ?>);
+    submit.disabled = (password.value === '' <?php if ($correctPassword) echo " || chosencommand.value === ''"; ?>);
   }
 
   password.addEventListener('input', checkInput);
@@ -468,7 +486,7 @@ window.onload = function() {
   command.forEach(function(radio) {
     radio.addEventListener('click', checkInput);
   });
-  $chosencommand.addEventListener('input', checkInput);
+  chosencommand.addEventListener('input', checkInput);
 <?php endif; ?>
 
   // Checks immediately on page load
